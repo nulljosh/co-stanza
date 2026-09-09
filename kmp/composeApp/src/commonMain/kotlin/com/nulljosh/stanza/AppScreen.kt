@@ -83,6 +83,7 @@ fun AppScreen(client: StanzaClient = remember { StanzaClient() }) {
                                 Button({ scope.launch { msg = client.signIn(email, pw, false) ?: ""; if (client.token != null) { signedIn = true; screen = Screen.Write } } }) { Text("Sign in") }
                                 OutlinedButton({ scope.launch { msg = client.signIn(email, pw, true) ?: "" } }) { Text("Create account") }
                             }
+                            TextButton({ scope.launch { msg = client.forgot(email) } }, enabled = email.isNotBlank()) { Text("Forgot password?") }
                             if (msg.isNotEmpty()) Text(msg, color = MaterialTheme.colorScheme.outline)
                         }
                     }

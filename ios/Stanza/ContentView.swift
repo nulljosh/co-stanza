@@ -54,6 +54,15 @@ final class Store {
         } catch { self.error = error.localizedDescription }
     }
 
+    /// Sends the reset email. The link opens the web app, which sets the new password.
+    func forgot(email: String) async {
+        let body = try! JSONSerialization.data(withJSONObject: ["email": email])
+        var r = request("/auth/v1/recover", method: "POST", body: body)
+        r.setValue("https://stanza.heyitsmejosh.com/app#/reset", forHTTPHeaderField: "redirect_to")
+        _ = try? await URLSession.shared.data(for: r)
+        error = "Check your email for a reset link."
+    }
+
     func signOut() {
         token = nil; userId = nil
         UserDefaults.standard.removeObject(forKey: "token"); UserDefaults.standard.removeObject(forKey: "userId")
@@ -172,6 +181,7 @@ struct AccountView: View {
                     SecureField("Password", text: $password)
                     Button("Sign in") { Task { await store.signIn(email: email, password: password, signUp: false); if store.token != nil { dismiss() } } }
                     Button("Create account") { Task { await store.signIn(email: email, password: password, signUp: true) } }
+                    Button("Forgot password?") { Task { await store.forgot(email: email) } }.disabled(email.isEmpty)
                     if !store.error.isEmpty { Text(store.error).foregroundStyle(.secondary) }
                 }
             }

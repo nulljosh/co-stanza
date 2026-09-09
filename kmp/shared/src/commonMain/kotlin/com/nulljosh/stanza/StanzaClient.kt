@@ -56,6 +56,12 @@ class StanzaClient(private val http: HttpClient = defaultClient()) {
         else s.error_description ?: s.msg ?: if (signUp) "Check your email to confirm." else "Sign in failed"
     } catch (e: Exception) { e.message }
 
+    /** Sends the reset email; the link opens the web app to set a new password. */
+    suspend fun forgot(email: String): String = try {
+        http.post("$URL/auth/v1/recover?redirect_to=https://stanza.heyitsmejosh.com/app%23/reset") { auth(); setBody(mapOf("email" to email)) }
+        "Check your email for a reset link."
+    } catch (e: Exception) { e.message ?: "Failed" }
+
     suspend fun publish(pen: String, title: String, body: String): Result<Poem> = try {
         val uid = userId ?: error("Not signed in")
         val r = http.post("$URL/rest/v1/stanza_poems") { auth(); setBody(mapOf("user_id" to uid, "pen_name" to pen, "title" to title, "body" to body)) }
