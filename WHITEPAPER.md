@@ -1,12 +1,12 @@
-# Stanza Technical Whitepaper
+# Co-Stanza Technical Whitepaper
 
 **v1.0** | September 2026
 
-Stanza is a poetry network with one table and no ranking. Poems are rows. Pages are queries over those rows. Every client, web or native, talks straight to the database through row-level security. There is no application server.
+Co-Stanza is a poetry network with one table and no ranking. Poems are rows. Pages are queries over those rows. Every client, web or native, talks straight to the database through row-level security. There is no application server.
 
 ## The core mechanic
 
-A poem is a title, a pen name, a body and a timestamp, owned by an account. The body is plain text. Blank lines separate stanzas; single newlines are kept as line breaks. That rule is the only formatting Stanza has, and it lives in one function shared by the web app and its test.
+A poem is a title, a pen name, a body and a timestamp, owned by an account. The body is plain text. Blank lines separate stanzas; single newlines are kept as line breaks. That rule is the only formatting Co-Stanza has, and it lives in one function shared by the web app and its test.
 
 Three pages fall out of one table:
 
@@ -30,7 +30,7 @@ Android, Windows and Linux come from one Kotlin Multiplatform module. A Ktor cli
 
 ## Hosting
 
-Cloudflare Workers serves the `web/` folder as static assets on `stanza.heyitsmejosh.com`. Deploys are one wrangler command. There is nothing to run.
+Cloudflare Workers serves the `web/` folder as static assets on `co-stanza.heyitsmejosh.com`. Deploys are one wrangler command. There is nothing to run.
 
 ## What is left out, and why
 

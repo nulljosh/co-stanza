@@ -58,7 +58,7 @@ final class Store {
     func forgot(email: String) async {
         let body = try! JSONSerialization.data(withJSONObject: ["email": email])
         var r = request("/auth/v1/recover", method: "POST", body: body)
-        r.setValue("https://stanza.heyitsmejosh.com/app#/reset", forHTTPHeaderField: "redirect_to")
+        r.setValue("https://co-stanza.heyitsmejosh.com/app#/reset", forHTTPHeaderField: "redirect_to")
         _ = try? await URLSession.shared.data(for: r)
         error = "Check your email for a reset link."
     }
@@ -93,7 +93,7 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .overlay { if store.poems.isEmpty { ContentUnavailableView("Nothing here yet", systemImage: "text.alignleft", description: Text("Write the first one.")) } }
-            .navigationTitle("Stanza")
+            .navigationTitle("Co-Stanza")
             .navigationDestination(for: String.self) { id in
                 if let p = store.poems.first(where: { $0.id == id }) { PoemView(poem: p) }
             }

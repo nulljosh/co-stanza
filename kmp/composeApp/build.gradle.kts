@@ -51,7 +51,7 @@ compose.desktop {
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
             )
-            packageName = "Stanza"
+            packageName = "CoStanza"
             packageVersion = "1.0.0"
             description = "A quiet place to post poems."
         }

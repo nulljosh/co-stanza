@@ -31,7 +31,7 @@ fun AppScreen(client: StanzaClient = remember { StanzaClient() }) {
     Surface(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().widthIn(max = 640.dp).padding(24.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                TextButton({ screen = Screen.Feed }) { Text("Stanza", style = MaterialTheme.typography.titleLarge) }
+                TextButton({ screen = Screen.Feed }) { Text("Co-Stanza", style = MaterialTheme.typography.titleLarge) }
                 Spacer(Modifier.weight(1f))
                 TextButton({ screen = if (signedIn) Screen.Write else Screen.Account }) { Text("Write") }
                 TextButton({ screen = Screen.Account }) { Text(if (signedIn) "Account" else "Sign in") }

@@ -8,7 +8,7 @@ import androidx.compose.ui.window.rememberWindowState
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Stanza",
+        title = "Co-Stanza",
         state = rememberWindowState(width = 720.dp, height = 720.dp),
     ) {
         StanzaTheme { AppScreen() }

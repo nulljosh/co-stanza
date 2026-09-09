@@ -1,6 +1,6 @@
-# Stanza
+# Co-Stanza
 
-Poetry network. Svbtle-shaped: one column, name, poems, nothing else. Live at stanza.heyitsmejosh.com.
+Poetry network. Svbtle-shaped: one column, name, poems, nothing else. Live at co-stanza.heyitsmejosh.com.
 
 - `web/` is the whole site. `index.html` landing, `app.html` the app (hash routes: `#/`, `#/p/<id>`, `#/by/<name>`, `#/write`, `#/account`, `#/forgot`, `#/reset`), `poem.js` pure helpers shared with `test.mjs`
 - Backend: shared Supabase `spark` project (tjsxsqlxjmanwvmywwvw), table `stanza_poems`, RLS read-all / insert-own / delete-own. Migration name `stanza_poems`

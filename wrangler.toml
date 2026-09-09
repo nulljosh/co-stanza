@@ -1,8 +1,8 @@
-name = "stanza"
+name = "co-stanza"
 compatibility_date = "2025-07-01"
 
 workers_dev = false
-routes = [{ pattern = "stanza.heyitsmejosh.com", custom_domain = true }]
+routes = [{ pattern = "co-stanza.heyitsmejosh.com", custom_domain = true }]
 
 [assets]
 directory = "web"
