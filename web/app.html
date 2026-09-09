@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stanza</title>
+<meta name="description" content="A quiet place to post poems.">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="https://heyitsmejosh.com/tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg, #fafafa); color: var(--text, #111); font-family: var(--font-body, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { background: none; border: 0; cursor: pointer; }
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 1.25rem clamp(1rem, 5vw, 3rem); border-bottom: 1px solid var(--border, #eee); }
+  header a.brand { font-weight: 700; letter-spacing: -.02em; }
+  header nav { display: flex; gap: 1.25rem; font-size: .9rem; color: var(--text2, #555); }
+  main { max-width: 38rem; margin: 0 auto; padding: 3rem clamp(1rem, 5vw, 3rem) 6rem; }
+  .poem { padding: 2.5rem 0; border-bottom: 1px solid var(--border, #eee); }
+  .poem h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
+  .poem .by { font-size: .85rem; color: var(--text2, #555); margin: .25rem 0 1.25rem; }
+  .poem p { white-space: pre-wrap; margin-bottom: 1.25rem; }
+  .poem p:last-child { margin-bottom: 0; }
+  .single .poem { border: 0; }
+  .single .poem h2 { font-size: 2rem; }
+  .single .poem p { font-size: 1.1rem; }
+  .back { display: inline-block; font-size: .9rem; color: var(--text2, #555); margin-bottom: 1rem; }
+  form { display: grid; gap: .75rem; }
+  input, textarea { width: 100%; padding: .7rem .9rem; border: 1px solid var(--border2, #ddd); border-radius: var(--radius-sm, 8px); background: var(--bg, #fff); }
+  textarea { min-height: 18rem; line-height: 1.7; resize: vertical; }
+  .btn { padding: .7rem 1.2rem; border-radius: var(--radius-sm, 8px); background: var(--text, #111); color: var(--bg, #fff); font-weight: 600; justify-self: start; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--text2, #555); font-size: .9rem; }
+  .danger { color: var(--text2, #555); font-size: .8rem; margin-top: 1rem; }
+  .empty { padding: 4rem 0; text-align: center; color: var(--text2, #555); }
+  .err { color: #b00020; font-size: .9rem; }
+  h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="#/">Stanza</a>
+  <nav>
+    <a href="#/write">Write</a>
+    <a href="#/account" id="who">Sign in</a>
+  </nav>
+</header>
+<main id="main"><p class="muted">Loading</p></main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { esc, renderBody, when, slug } from './poem.js';
+
+const sb = createClient('https://tjsxsqlxjmanwvmywwvw.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqc3hzcWx4am1hbnd2bXl3d3Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTc0MDEsImV4cCI6MjA4NjA3MzQwMX0.LphLfho3wdQC20MhtcnBpzQUNuBoTOobrugQbNGxc68');
+const main = document.getElementById('main');
+const who = document.getElementById('who');
+let user = null;
+
+const card = (p, single = false) => `
+  <article class="poem">
+    <h2>${single ? esc(p.title) : `<a href="${slug(p.id)}">${esc(p.title)}</a>`}</h2>
+    <div class="by"><a href="#/by/${esc(p.pen_name)}">${esc(p.pen_name)}</a> · ${when(p.created_at)}</div>
+    ${renderBody(p.body)}
+    ${single && user && user.id === p.user_id ? `<button class="danger" data-del="${p.id}">Delete this poem</button>` : ''}
+  </article>`;
+
+const q = () => sb.from('stanza_poems').select('*').order('created_at', { ascending: false });
+
+const views = {
+  async home() {
+    const { data } = await q().limit(50);
+    main.innerHTML = data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">Nothing here yet. Write the first one.</p>';
+  },
+  async by(name) {
+    const { data } = await q().eq('pen_name', name).limit(100);
+    main.innerHTML = `<h1>${esc(name)}</h1>` + (data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">No poems yet.</p>');
+  },
+  async p(id) {
+    const { data } = await sb.from('stanza_poems').select('*').eq('id', id).single();
+    main.className = 'single';
+    main.innerHTML = data ? `<a class="back" href="#/">Back</a>${card(data, true)}` : '<p class="empty">Not found.</p>';
+  },
+  write() {
+    if (!user) return views.account('Sign in to write.');
+    main.innerHTML = `<h1>Write</h1><form id="f">
+      <input name="pen_name" placeholder="Your name" required maxlength="40" value="${esc(localStorage.pen || '')}">
+      <input name="title" placeholder="Title" required maxlength="120">
+      <textarea name="body" placeholder="The poem. Blank line between stanzas." required maxlength="8000"></textarea>
+      <button class="btn">Publish</button><span class="err" id="e"></span></form>`;
+    document.getElementById('f').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const row = Object.fromEntries(new FormData(ev.target));
+      ev.target.querySelector('.btn').disabled = true;
+      const { data, error } = await sb.from('stanza_poems').insert({ ...row, user_id: user.id }).select().single();
+      if (error) { document.getElementById('e').textContent = error.message; ev.target.querySelector('.btn').disabled = false; return; }
+      localStorage.pen = row.pen_name;
+      location.hash = slug(data.id);
+    };
+  },
+  account(msg = '') {
+    if (user) {
+      main.innerHTML = `<h1>Account</h1><p class="muted">${esc(user.email)}</p><p style="margin-top:1rem"><button class="btn" id="out">Sign out</button></p>`;
+      document.getElementById('out').onclick = async () => { await sb.auth.signOut(); location.hash = '#/'; };
+      return;
+    }
+    main.innerHTML = `<h1>Sign in</h1><p class="muted">${esc(msg)}</p><form id="f" style="margin-top:1rem">
+      <input type="email" name="email" placeholder="Email" required autocomplete="email">
+      <input type="password" name="password" placeholder="Password" required minlength="6" autocomplete="current-password">
+      <div style="display:flex;gap:.75rem"><button class="btn" value="in">Sign in</button><button class="btn" value="up" style="background:none;color:inherit;border:1px solid var(--border2,#ddd)">Create account</button></div>
+      <span class="err" id="e"></span></form>`;
+    document.getElementById('f').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const creds = Object.fromEntries(new FormData(ev.target));
+      const up = ev.submitter?.value === 'up';
+      const { error } = up
+        ? await sb.auth.signUp({ ...creds, options: { emailRedirectTo: location.origin + '/app.html' } })
+        : await sb.auth.signInWithPassword(creds);
+      document.getElementById('e').textContent = error ? error.message : up ? 'Check your email to confirm.' : '';
+      if (!error && !up) location.hash = '#/write';
+    };
+  },
+};
+
+async function route() {
+  main.className = '';
+  const [, v = 'home', arg] = location.hash.split('/');
+  const fn = views[v] || views.home;
+  await fn(arg ? decodeURIComponent(arg) : undefined);
+  window.scrollTo(0, 0);
+}
+main.onclick = async (e) => {
+  const id = e.target.dataset?.del;
+  if (!id || !confirm('Delete this poem?')) return;
+  await sb.from('stanza_poems').delete().eq('id', id);
+  location.hash = '#/';
+};
+sb.auth.onAuthStateChange((_e, session) => {
+  user = session?.user || null;
+  who.textContent = user ? 'Account' : 'Sign in';
+  route();
+});
+window.addEventListener('hashchange', route);
+</script>
+</body>
+</html>

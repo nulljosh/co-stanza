@@ -1,0 +1,10 @@
+# Stanza
+
+Poetry network. Svbtle-shaped: one column, name, poems, nothing else. Live at stanza.heyitsmejosh.com.
+
+- `web/` is the whole site. `index.html` landing, `app.html` the app (hash routes: `#/`, `#/p/<id>`, `#/by/<name>`, `#/write`, `#/account`), `poem.js` pure helpers shared with `test.mjs`
+- Backend: shared Supabase `spark` project (tjsxsqlxjmanwvmywwvw), table `stanza_poems`, RLS read-all / insert-own / delete-own. Migration name `stanza_poems`
+- Deploy: `env -u CLOUDFLARE_API_TOKEN npx wrangler deploy`. A push deploys nothing
+- Native: `ios/` + `macos/` (xcodegen, shared ContentView.swift, URLSession straight to PostgREST/GoTrue), `kmp/` (Ktor client in shared, Compose in composeApp; CI builds msi/deb/apk, no JDK on this Mac)
+- Design tokens from heyitsmejosh.com/tokens.css. Sans-serif only, no emojis, no purple
+- Auth emails: authmail THEMES has a `stanza` row; redirect host is in the spark allow-list

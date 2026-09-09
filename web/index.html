@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stanza — a quiet place to post poems</title>
+<meta name="description" content="A social network for poetry. No likes, no feed algorithm, no noise. Just the poems, one after another.">
+<meta property="og:title" content="Stanza">
+<meta property="og:description" content="A quiet place to post poems.">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="https://heyitsmejosh.com/tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg, #fafafa); color: var(--text, #111); font-family: var(--font-body, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  main { max-width: 42rem; margin: 0 auto; padding: 5rem clamp(1rem, 5vw, 3rem) 6rem; }
+  .hero h1 { font-size: clamp(2.4rem, 7vw, 3.6rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 1rem; }
+  .hero p { font-size: 1.2rem; color: var(--text2, #555); max-width: 34rem; }
+  .cta { display: flex; gap: .75rem; margin: 1.75rem 0 3rem; }
+  .btn { padding: .75rem 1.3rem; border-radius: var(--radius-sm, 8px); background: var(--text, #111); color: var(--bg, #fff); font-weight: 600; }
+  .btn.ghost { background: none; color: inherit; border: 1px solid var(--border2, #ddd); }
+  section { margin-top: 4rem; }
+  h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: .5rem; }
+  section p { color: var(--text2, #555); margin-bottom: 1rem; max-width: 36rem; }
+  footer { margin-top: 5rem; font-size: .85rem; color: var(--text2, #555); display: flex; gap: 1.25rem; }
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <h1>Stanza</h1>
+    <p>A quiet place to post poems. No likes, no ranking, no noise. Your name, your poems, one after another.</p>
+  </div>
+  <div class="cta"><a class="btn" href="app.html#/write">Write a poem</a><a class="btn ghost" href="app.html">Read</a></div>
+
+  <section>
+    <h2>Every social network is loud</h2>
+    <p>A poem needs silence around it. Feeds bury it under everything else. Counters turn it into a score. That's the gap.</p>
+  </section>
+  <section>
+    <h2>What Stanza does</h2>
+    <p>You sign in, pick a name, and publish. Each poem gets its own page. Your name gets a page with all of them. The front page is everyone's, newest first. That's it. That's the whole product.</p>
+  </section>
+  <section>
+    <h2>Everywhere</h2>
+    <p>Web, iPhone, iPad, Mac, Android, Windows and Linux. Same poems, same account.</p>
+  </section>
+  <footer><a href="https://github.com/nulljosh/stanza">Source</a><a href="app.html">Open the app</a></footer>
+</main>
+</body>
+</html>
