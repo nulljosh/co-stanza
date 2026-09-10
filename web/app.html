@@ -36,7 +36,9 @@
   .empty { padding: 4rem 0; text-align: center; color: var(--text2, #555); }
   .err { color: #b00020; font-size: .9rem; }
   h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: 1.5rem; }
+  .embed header { display: none; }
 </style>
+<script>if(/[?&]embed\b/.test(location.search))document.documentElement.classList.add('embed')</script>
 </head>
 <body>
 <header>
