@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftUI
 
 // Thin client on the same Supabase project the web app uses. The anon key ships in the web
@@ -51,6 +52,20 @@ final class Store {
                 UserDefaults.standard.set(t, forKey: "token"); UserDefaults.standard.set(u, forKey: "userId")
                 error = ""
             } else { error = s.error_description ?? s.msg ?? (signUp ? "Check your email to confirm." : "Sign in failed") }
+        } catch { self.error = error.localizedDescription }
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async {
+        struct Session: Decodable { let access_token: String?; let user: U?; let msg: String?; let error_description: String?; struct U: Decodable { let id: String } }
+        let body = try! JSONSerialization.data(withJSONObject: ["provider": "apple", "id_token": idToken, "nonce": nonce])
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request("/auth/v1/token?grant_type=id_token", method: "POST", body: body))
+            let s = try JSONDecoder().decode(Session.self, from: data)
+            if let t = s.access_token, let u = s.user?.id {
+                token = t; userId = u
+                UserDefaults.standard.set(t, forKey: "token"); UserDefaults.standard.set(u, forKey: "userId")
+                error = ""
+            } else { error = s.error_description ?? s.msg ?? "Sign in with Apple failed" }
         } catch { self.error = error.localizedDescription }
     }
 
@@ -170,6 +185,7 @@ struct AccountView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var email = ""
     @State private var password = ""
+    @State private var appleNonce = ""
 
     var body: some View {
         NavigationStack {
@@ -182,6 +198,22 @@ struct AccountView: View {
                     Button("Sign in") { Task { await store.signIn(email: email, password: password, signUp: false); if store.token != nil { dismiss() } } }
                     Button("Create account") { Task { await store.signIn(email: email, password: password, signUp: true) } }
                     Button("Forgot password?") { Task { await store.forgot(email: email) } }.disabled(email.isEmpty)
+                    SignInWithAppleButton(.signIn) { request in
+                        appleNonce = randomNonce()
+                        request.requestedScopes = [.email]
+                        request.nonce = sha256(appleNonce)
+                    } onCompletion: { result in
+                        guard case .success(let auth) = result,
+                              let cred = auth.credential as? ASAuthorizationAppleIDCredential,
+                              let tokenData = cred.identityToken,
+                              let idToken = String(data: tokenData, encoding: .utf8) else { return }
+                        Task {
+                            await store.signInWithApple(idToken: idToken, nonce: appleNonce)
+                            if store.token != nil { dismiss() }
+                        }
+                    }
+                    .signInWithAppleButtonStyle(.black)
+                    .frame(height: 44)
                     if !store.error.isEmpty { Text(store.error).foregroundStyle(.secondary) }
                 }
             }
@@ -189,7 +221,25 @@ struct AccountView: View {
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
         }
         #if os(macOS)
-        .frame(minWidth: 360, minHeight: 240)
+        .frame(minWidth: 360, minHeight: 280)
         #endif
     }
+}
+
+import CryptoKit
+
+private func randomNonce(length: Int = 32) -> String {
+    let chars = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+    var result = ""
+    var remaining = length
+    while remaining > 0 {
+        var random: UInt8 = 0
+        _ = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+        if random < chars.count { result.append(chars[Int(random)]); remaining -= 1 }
+    }
+    return result
+}
+
+private func sha256(_ input: String) -> String {
+    SHA256.hash(data: Data(input.utf8)).compactMap { String(format: "%02x", $0) }.joined()
 }
