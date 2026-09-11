@@ -19,7 +19,10 @@
   main { max-width: 38rem; margin: 0 auto; padding: 3rem clamp(1rem, 5vw, 3rem) 6rem; }
   .poem { padding: 2.5rem 0; border-bottom: 1px solid var(--border, #eee); }
   .poem h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
-  .poem .by { font-size: .85rem; color: var(--text2, #555); margin: .25rem 0 1.25rem; }
+  .poem .by { font-size: .85rem; color: var(--text2, #555); margin: .25rem 0 1.25rem; display: flex; align-items: center; gap: .4rem; }
+  .avatar { border-radius: 4px; display: inline-block; vertical-align: middle; }
+  .profile-head { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.5rem; }
+  .profile-head .avatar { width: 48px; height: 48px; border-radius: 8px; }
   .poem p { white-space: pre-wrap; margin-bottom: 1.25rem; }
   .poem p:last-child { margin-bottom: 0; }
   .single .poem { border: 0; }
@@ -68,10 +71,35 @@ const main = document.getElementById('main');
 const who = document.getElementById('who');
 let user = null;
 
+// Deterministic pixel avatar seeded by pen name -- no schema change, no storage,
+// same name always renders the same little icon.
+function avatarSvg(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const rand = () => { h = (h * 1103515245 + 12345) >>> 0; return h / 4294967296; };
+  const palettes = [['#B5836A', '#7C93A6', '#4A5A68'], ['#7C8B6B', '#A8B99A', '#CBD8BE'], ['#0077b6', '#00b4d8', '#90e0ef'], ['#A5735C', '#D2A88E', '#E3B778'], ['#2d6a4f', '#52b788', '#b7e4c7']];
+  const bgs = ['#111', '#0c1220', '#1a1a1a', '#0f0f1a', '#0a1a0a'];
+  const palette = palettes[Math.floor(rand() * palettes.length)];
+  const bg = bgs[Math.floor(rand() * bgs.length)];
+  const px = 8, size = 8, total = size * px;
+  let rects = '';
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < Math.ceil(size / 2); col++) {
+      const ci = rand() > 0.45 ? Math.floor(rand() * 3) : -1;
+      if (ci < 0) continue;
+      const c = palette[ci];
+      rects += `<rect x="${col * px}" y="${row * px}" width="${px}" height="${px}" fill="${c}"/>`;
+      if (col < size - 1 - col) rects += `<rect x="${(size - 1 - col) * px}" y="${row * px}" width="${px}" height="${px}" fill="${c}"/>`;
+    }
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" width="${total}" height="${total}" shape-rendering="crispEdges"><rect width="${total}" height="${total}" fill="${bg}"/>${rects}</svg>`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
 const card = (p, single = false) => `
   <article class="poem">
     <h2>${single ? esc(p.title) : `<a href="${slug(p.id)}">${esc(p.title)}</a>`}</h2>
-    <div class="by"><a href="#/by/${esc(p.pen_name)}">${esc(p.pen_name)}</a> · ${when(p.created_at)}</div>
+    <div class="by"><img class="avatar" src="${avatarSvg(p.pen_name)}" width="20" height="20" alt=""><a href="#/by/${esc(p.pen_name)}">${esc(p.pen_name)}</a> · ${when(p.created_at)}</div>
     ${renderBody(p.body)}
     ${single && user && user.id === p.user_id ? `<button class="danger" data-del="${p.id}">Delete this poem</button>` : ''}
   </article>`;
@@ -85,7 +113,8 @@ const views = {
   },
   async by(name) {
     const { data } = await q().eq('pen_name', name).limit(100);
-    main.innerHTML = `<h1>${esc(name)}</h1>` + (data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">No poems yet.</p>');
+    const head = `<div class="profile-head"><img class="avatar" src="${avatarSvg(name)}" width="48" height="48" alt=""><div><h1 style="margin-bottom:.15rem">${esc(name)}</h1><p class="muted">${data?.length || 0} poem${data?.length === 1 ? '' : 's'}</p></div></div>`;
+    main.innerHTML = head + (data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">No poems yet.</p>');
   },
   async p(id) {
     const { data } = await sb.from('stanza_poems').select('*').eq('id', id).single();
@@ -112,7 +141,9 @@ const views = {
   async account(msg = '') {
     if (user) {
       const { data } = await q().eq('user_id', user.id).limit(100);
-      main.innerHTML = `<h1>Account</h1><p class="muted">${esc(user.email)}</p><p style="margin-top:1rem"><button class="btn" id="out">Sign out</button></p>
+      const seed = localStorage.pen || user.email;
+      const head = `<div class="profile-head"><img class="avatar" src="${avatarSvg(seed)}" width="48" height="48" alt=""><div><h1 style="margin-bottom:.15rem">${esc(localStorage.pen || 'Account')}</h1><p class="muted">${esc(user.email)}</p></div></div>`;
+      main.innerHTML = head + `<p style="margin-top:1rem"><button class="btn" id="out">Sign out</button></p>
         <h1 style="margin-top:2.5rem">Your poems</h1>` + (data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">Nothing published yet.</p>');
       document.getElementById('out').onclick = async () => { await sb.auth.signOut(); location.hash = '#/'; };
       return;
