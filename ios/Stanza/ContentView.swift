@@ -1,4 +1,5 @@
 import AuthenticationServices
+import Supabase
 import SwiftUI
 
 // Thin client on the same Supabase project the web app uses. The anon key ships in the web
@@ -21,6 +22,10 @@ final class Store {
     var token: String? = UserDefaults.standard.string(forKey: "token")
     var userId: String? = UserDefaults.standard.string(forKey: "userId")
     var error = ""
+
+    /// Used only for the Google/GitHub/X OAuth browser flow (PKCE), which needs a real
+    /// client to drive ASWebAuthenticationSession. Everything else stays on raw REST above.
+    private lazy var sbClient = SupabaseClient(supabaseURL: URL(string: Self.url)!, supabaseKey: Self.anon)
 
     private func request(_ path: String, method: String = "GET", body: Data? = nil) -> URLRequest {
         var r = URLRequest(url: URL(string: Self.url + path)!)
@@ -67,6 +72,21 @@ final class Store {
                 error = ""
             } else { error = s.error_description ?? s.msg ?? "Sign in with Apple failed" }
         } catch { self.error = error.localizedDescription }
+    }
+
+    /// `co-stanza://` must stay in the Supabase project's uri_allow_list and in
+    /// CFBundleURLTypes on both platforms, or the callback lands nowhere.
+    func signInWithOAuth(provider: Provider) async {
+        do {
+            try await sbClient.auth.signInWithOAuth(provider: provider, redirectTo: URL(string: "co-stanza://"))
+            let session = try await sbClient.auth.session
+            token = session.accessToken; userId = session.user.id.uuidString
+            UserDefaults.standard.set(session.accessToken, forKey: "token")
+            UserDefaults.standard.set(session.user.id.uuidString, forKey: "userId")
+            error = ""
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 
     /// Sends the reset email. The link opens the web app, which sets the new password.
@@ -214,6 +234,22 @@ struct AccountView: View {
                     }
                     .signInWithAppleButtonStyle(.black)
                     .frame(height: 44)
+
+                    Button { Task { await store.signInWithOAuth(provider: .google); if store.token != nil { dismiss() } } } label: {
+                        Text("Continue with Google").fontWeight(.semibold).frame(maxWidth: .infinity).padding(.vertical, 12)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button { Task { await store.signInWithOAuth(provider: .github); if store.token != nil { dismiss() } } } label: {
+                        Text("Continue with GitHub").fontWeight(.semibold).frame(maxWidth: .infinity).padding(.vertical, 12)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button { Task { await store.signInWithOAuth(provider: .twitter); if store.token != nil { dismiss() } } } label: {
+                        Text("Continue with X").fontWeight(.semibold).frame(maxWidth: .infinity).padding(.vertical, 12)
+                    }
+                    .buttonStyle(.bordered)
+
                     if !store.error.isEmpty { Text(store.error).foregroundStyle(.secondary) }
                 }
             }
