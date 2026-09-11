@@ -2,3 +2,4 @@
 node_modules/
 *.xcodeproj/xcuserdata/
 .build/
+supabase/.temp/
