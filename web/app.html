@@ -141,11 +141,15 @@ const views = {
   async account(msg = '') {
     if (user) {
       const { data } = await q().eq('user_id', user.id).limit(100);
-      const seed = localStorage.pen || user.email;
-      const head = `<div class="profile-head"><img class="avatar" src="${avatarSvg(seed)}" width="48" height="48" alt=""><div><h1 style="margin-bottom:.15rem">${esc(localStorage.pen || 'Account')}</h1><p class="muted">${esc(user.email)}</p></div></div>`;
+      const seed = (localStorage.pen || user.email) + (localStorage.avatarSalt || '');
+      const head = `<div class="profile-head"><img class="avatar" id="myAvatar" src="${avatarSvg(seed)}" width="48" height="48" alt="" title="Click for a new avatar" style="cursor:pointer"><div><h1 style="margin-bottom:.15rem">${esc(localStorage.pen || 'Account')}</h1><p class="muted">${esc(user.email)}</p></div></div>`;
       main.innerHTML = head + `<p style="margin-top:1rem"><button class="btn" id="out">Sign out</button></p>
         <h1 style="margin-top:2.5rem">Your poems</h1>` + (data?.length ? data.map((p) => card(p)).join('') : '<p class="empty">Nothing published yet.</p>');
       document.getElementById('out').onclick = async () => { await sb.auth.signOut(); location.hash = '#/'; };
+      document.getElementById('myAvatar').onclick = () => {
+        localStorage.avatarSalt = Math.random().toString(36).slice(2);
+        views.account();
+      };
       return;
     }
     main.innerHTML = `<h1>Sign in</h1><p class="muted">${esc(msg)}</p><form id="f" style="margin-top:1rem">
@@ -215,7 +219,7 @@ main.onclick = async (e) => {
 sb.auth.onAuthStateChange((event, session) => {
   user = session?.user || null;
   if (event === 'PASSWORD_RECOVERY') location.hash = '#/reset';
-  who.textContent = user ? 'Account' : 'Sign in';
+  who.textContent = user ? (localStorage.pen || user.email) : 'Sign in';
   route();
 });
 window.addEventListener('hashchange', route);
