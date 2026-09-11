@@ -313,7 +313,7 @@ struct AccountView: View {
                     }
                     .buttonStyle(.bordered)
 
-                    Button { Task { await store.signInWithOAuth(provider: .twitter); if store.token != nil { dismiss() } } } label: {
+                    Button { Task { await store.signInWithOAuth(provider: .x); if store.token != nil { dismiss() } } } label: {
                         Text("Continue with X").fontWeight(.semibold).frame(maxWidth: .infinity).padding(.vertical, 12)
                     }
                     .buttonStyle(.bordered)

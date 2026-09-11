@@ -178,7 +178,7 @@ const views = {
     document.getElementById('oauthApple').onclick = () => sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: location.origin + '/app' } });
     document.getElementById('oauthGoogle').onclick = () => sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/app' } });
     document.getElementById('oauthGithub').onclick = () => sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + '/app' } });
-    document.getElementById('oauthX').onclick = () => sb.auth.signInWithOAuth({ provider: 'twitter', options: { redirectTo: location.origin + '/app' } });
+    document.getElementById('oauthX').onclick = () => sb.auth.signInWithOAuth({ provider: 'x', options: { redirectTo: location.origin + '/app' } });
   },
   forgot() {
     main.innerHTML = `<h1>Reset password</h1><p class="muted">We email you a link.</p><form id="f" style="margin-top:1rem">
