@@ -22,6 +22,7 @@ targets:
       # Shared with iOS. Do not fork these files.
       - path: ../ios/Stanza/ContentView.swift
       - path: ../ios/Stanza/StanzaApp.swift
+      - path: ../ios/Stanza/KeychainHelper.swift
       - path: Assets.xcassets
         buildPhase: resources
     dependencies:

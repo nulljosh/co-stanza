@@ -22,7 +22,9 @@ v0 is what you see: the feed, the poem page, the author page. v1 adds following 
 
 - Write, read, delete your own. Blank line between stanzas, single newlines kept
 - Author pages by pen name, poem pages by id
-- Email and password accounts, shared with the rest of the fleet
+- Sign in with Apple, Google, GitHub, X, or email and password, shared with the rest of the fleet
+- Deterministic pixel avatar, click to reshuffle
+- Delete your account whenever you want
 - Web, iPhone, iPad, Mac, Android, Windows, Linux
 
 ## Run it

@@ -1,4 +1,5 @@
 import AuthenticationServices
+import LocalAuthentication
 import Supabase
 import SwiftUI
 
@@ -56,8 +57,48 @@ final class Store {
                 token = t; userId = u
                 UserDefaults.standard.set(t, forKey: "token"); UserDefaults.standard.set(u, forKey: "userId")
                 error = ""
+                if !signUp { saveBiometricCredentials(email: email, password: password) }
             } else { error = s.error_description ?? s.msg ?? (signUp ? "Check your email to confirm." : "Sign in failed") }
         } catch { self.error = error.localizedDescription }
+    }
+
+    // MARK: Face ID convenience sign-in
+    // Optional shortcut for a returning user -- never a gate, poems stay public either way.
+    private static let savedEmailKey = "co-stanza.biometric.email"
+
+    func hasSavedBiometricCredentials() -> Bool {
+        guard let email = UserDefaults.standard.string(forKey: Self.savedEmailKey) else { return false }
+        return KeychainHelper.load(key: email) != nil
+    }
+
+    func biometricLogin() async {
+        let context = LAContext()
+        do {
+            try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Sign in to Co-Stanza")
+        } catch {
+            self.error = error.localizedDescription
+            return
+        }
+        guard let email = UserDefaults.standard.string(forKey: Self.savedEmailKey),
+              let data = KeychainHelper.load(key: email),
+              let password = String(data: data, encoding: .utf8) else {
+            error = "No saved sign-in found."
+            return
+        }
+        await signIn(email: email, password: password, signUp: false)
+    }
+
+    private func saveBiometricCredentials(email: String, password: String) {
+        guard let data = password.data(using: .utf8) else { return }
+        UserDefaults.standard.set(email, forKey: Self.savedEmailKey)
+        KeychainHelper.save(key: email, data: data)
+    }
+
+    private func clearBiometricCredentials() {
+        if let email = UserDefaults.standard.string(forKey: Self.savedEmailKey) {
+            KeychainHelper.delete(key: email)
+        }
+        UserDefaults.standard.removeObject(forKey: Self.savedEmailKey)
     }
 
     func signInWithApple(idToken: String, nonce: String) async {
@@ -101,6 +142,7 @@ final class Store {
     func signOut() {
         token = nil; userId = nil
         UserDefaults.standard.removeObject(forKey: "token"); UserDefaults.standard.removeObject(forKey: "userId")
+        clearBiometricCredentials()
     }
 
     /// Calls the shared `delete-account` Edge Function on the spark Supabase project,
@@ -234,6 +276,11 @@ struct AccountView: View {
                     Button("Delete account", role: .destructive) { confirmingDelete = true }
                         .disabled(deletingAccount)
                 } else {
+                    if store.hasSavedBiometricCredentials() {
+                        Button { Task { await store.biometricLogin(); if store.token != nil { dismiss() } } } label: {
+                            Label("Sign in with Face ID", systemImage: "faceid")
+                        }
+                    }
                     TextField("Email", text: $email).textContentType(.emailAddress)
                     SecureField("Password", text: $password)
                     Button("Sign in") { Task { await store.signIn(email: email, password: password, signUp: false); if store.token != nil { dismiss() } } }
