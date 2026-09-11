@@ -103,6 +103,23 @@ final class Store {
         UserDefaults.standard.removeObject(forKey: "token"); UserDefaults.standard.removeObject(forKey: "userId")
     }
 
+    /// Calls the shared `delete-account` Edge Function on the spark Supabase project,
+    /// which uses the service-role key to delete the authenticated user server-side
+    /// (the anon-key client SDK has no permission to delete its own auth user).
+    func deleteAccount() async -> Bool {
+        guard let token else { return false }
+        var r = URLRequest(url: URL(string: "\(Self.url)/functions/v1/delete-account")!)
+        r.httpMethod = "POST"
+        r.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        guard let (_, response) = try? await URLSession.shared.data(for: r),
+              (response as? HTTPURLResponse)?.statusCode == 200 else {
+            error = "Couldn't delete account. Try again."
+            return false
+        }
+        signOut()
+        return true
+    }
+
     func publish(pen: String, title: String, body: String) async -> Bool {
         guard let userId else { return false }
         let json = try! JSONSerialization.data(withJSONObject: ["user_id": userId, "pen_name": pen, "title": title, "body": body])
@@ -206,12 +223,16 @@ struct AccountView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var appleNonce = ""
+    @State private var confirmingDelete = false
+    @State private var deletingAccount = false
 
     var body: some View {
         NavigationStack {
             Form {
                 if store.token != nil {
                     Button("Sign out") { store.signOut(); dismiss() }
+                    Button("Delete account", role: .destructive) { confirmingDelete = true }
+                        .disabled(deletingAccount)
                 } else {
                     TextField("Email", text: $email).textContentType(.emailAddress)
                     SecureField("Password", text: $password)
@@ -255,6 +276,15 @@ struct AccountView: View {
             }
             .navigationTitle(store.token == nil ? "Sign in" : "Account")
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
+            .confirmationDialog("Delete account?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+                Button("Delete account", role: .destructive) {
+                    deletingAccount = true
+                    Task { if await store.deleteAccount() { dismiss() }; deletingAccount = false }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This permanently deletes your account and all your poems. This cannot be undone.")
+            }
         }
         #if os(macOS)
         .frame(minWidth: 360, minHeight: 280)
