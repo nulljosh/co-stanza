@@ -111,7 +111,12 @@ const views = {
       <input type="password" name="password" placeholder="Password" required minlength="6" autocomplete="current-password">
       <div style="display:flex;gap:.75rem"><button class="btn" value="in">Sign in</button><button class="btn" value="up" style="background:none;color:inherit;border:1px solid var(--border2,#ddd)">Create account</button></div>
       <span class="err" id="e"></span>
-      <a class="muted" href="#/forgot">Forgot password?</a></form>`;
+      <a class="muted" href="#/forgot">Forgot password?</a></form>
+      <p class="muted" style="margin-top:1.25rem">or</p>
+      <div style="display:flex;gap:.75rem;margin-top:.5rem">
+        <button class="btn" id="oauthApple" style="background:none;color:inherit;border:1px solid var(--border2,#ddd)">Continue with Apple</button>
+        <button class="btn" id="oauthGoogle" style="background:none;color:inherit;border:1px solid var(--border2,#ddd)">Continue with Google</button>
+      </div>`;
     document.getElementById('f').onsubmit = async (ev) => {
       ev.preventDefault();
       const creds = Object.fromEntries(new FormData(ev.target));
@@ -122,6 +127,8 @@ const views = {
       document.getElementById('e').textContent = error ? error.message : up ? 'Check your email to confirm.' : '';
       if (!error && !up) location.hash = '#/write';
     };
+    document.getElementById('oauthApple').onclick = () => sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: location.origin + '/app' } });
+    document.getElementById('oauthGoogle').onclick = () => sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/app' } });
   },
   forgot() {
     main.innerHTML = `<h1>Reset password</h1><p class="muted">We email you a link.</p><form id="f" style="margin-top:1rem">
