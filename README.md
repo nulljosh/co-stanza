@@ -6,6 +6,8 @@
 
 Live at [co-stanza.heyitsmejosh.com](https://co-stanza.heyitsmejosh.com).
 
+![screenshot](screenshots/landing.png)
+
 A poetry network with no likes, no ranking, no follower count. Sign in, pick a name, publish. Each poem gets its own page. Your name gets a page with all of them. The front page is everyone's, newest first. Nobody is counting.
 
 v1 adds following and a quiet way to say "I read this". The business is a small yearly fee for a custom domain on your author page.
@@ -17,7 +19,7 @@ v1 adds following and a quiet way to say "I read this". The business is a small 
 - Sign in with Apple, Google, GitHub, X, or email and password, shared with the rest of the fleet
 - Deterministic pixel avatar, click to reshuffle
 - Delete your account whenever you want
-- Web, iPhone, iPad, Mac, Android, Windows, Linux
+- Web, iPhone, iPad, Mac, Apple Watch, Android, Windows, Linux
 
 ## Run it
 
@@ -31,6 +33,7 @@ node --test test.mjs
 # apple
 cd ios && xcodegen generate && open Stanza.xcodeproj
 cd macos && xcodegen generate && open Stanza.xcodeproj
+cd watchos && xcodegen generate && open StanzaWatch.xcodeproj
 
 # android / windows / linux (CI builds these; needs JDK 17)
 cd kmp && ./gradlew :composeApp:run
