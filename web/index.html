@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Co-Stanza — poems, no pressure</title>
+<title>Co-Stanza: poems, no pressure</title>
 <meta name="description" content="A poetry network for people who are not, in fact, doing great. No likes, no ranking. Post the poem. Then go take a nap.">
 <meta property="og:title" content="Co-Stanza">
 <meta property="og:description" content="Poems, no pressure.">
@@ -38,6 +38,9 @@
 .demo .device-mac .device-screen iframe,.demo .device-windows .device-screen iframe{width:1024px;height:640px}
 .demo-caption{font-size:.9rem;opacity:.65;margin:1rem 0 0}
 .embed .demo,.embed footer,.embed nav{display:none!important}
+.rotator{position:relative;height:3.4em;margin-top:1.25rem;max-width:34rem}
+.rotator blockquote{position:absolute;inset:0;font-style:italic;color:var(--text2,#555);opacity:0;transform:translateY(.4em);transition:opacity .6s ease,transform .6s ease}
+.rotator blockquote.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -45,6 +48,17 @@
   <div class="hero">
     <h1>Co-Stanza</h1>
     <p>A poetry network for people who are not, in fact, doing great. No likes, no ranking, no architect. Post the poem. Then go take a nap.</p>
+    <div class="rotator" id="rotator">
+      <blockquote class="show">you write a poem at midnight<br>in the morning it's still there</blockquote>
+      <blockquote>nobody is counting.<br>that's it. that's the whole product.</blockquote>
+      <blockquote>one poem, one page, no noise.<br>named after a man who was never doing great either.</blockquote>
+    </div>
+    <script>
+    (function(){var qs=document.querySelectorAll('#rotator blockquote'),i=0;
+    if(qs.length<2)return;
+    setInterval(function(){qs[i].classList.remove('show');i=(i+1)%qs.length;qs[i].classList.add('show');},4000);
+    })();
+    </script>
 <div class="demo">
   <div class="device device-iphone" id="demoFrame" data-title="Co-Stanza"><div class="device-screen"><iframe id="demoApp" title="Co-Stanza, live" loading="lazy" data-src="app.html?embed"></iframe></div></div>
   <p class="demo-caption">This is the <span id="demoDev">iPhone</span> app, live. Try it.</p>
