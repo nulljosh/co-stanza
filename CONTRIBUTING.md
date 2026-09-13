@@ -1,10 +1,10 @@
-# Contributing to co-stanza
+# Contributing to costanza
 
 ## Setup
 
 ```
-git clone https://github.com/nulljosh/co-stanza.git
-cd co-stanza
+git clone https://github.com/nulljosh/costanza.git
+cd costanza
 npm install
 ```
 

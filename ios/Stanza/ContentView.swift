@@ -64,7 +64,7 @@ final class Store {
 
     // MARK: Face ID convenience sign-in
     // Optional shortcut for a returning user -- never a gate, poems stay public either way.
-    private static let savedEmailKey = "co-stanza.biometric.email"
+    private static let savedEmailKey = "costanza.biometric.email"
 
     func hasSavedBiometricCredentials() -> Bool {
         guard let email = UserDefaults.standard.string(forKey: Self.savedEmailKey) else { return false }
@@ -115,11 +115,11 @@ final class Store {
         } catch { self.error = error.localizedDescription }
     }
 
-    /// `co-stanza://` must stay in the Supabase project's uri_allow_list and in
+    /// `costanza://` must stay in the Supabase project's uri_allow_list and in
     /// CFBundleURLTypes on both platforms, or the callback lands nowhere.
     func signInWithOAuth(provider: Provider) async {
         do {
-            try await sbClient.auth.signInWithOAuth(provider: provider, redirectTo: URL(string: "co-stanza://"))
+            try await sbClient.auth.signInWithOAuth(provider: provider, redirectTo: URL(string: "costanza://"))
             let session = try await sbClient.auth.session
             token = session.accessToken; userId = session.user.id.uuidString
             UserDefaults.standard.set(session.accessToken, forKey: "token")
@@ -134,7 +134,7 @@ final class Store {
     func forgot(email: String) async {
         let body = try! JSONSerialization.data(withJSONObject: ["email": email])
         var r = request("/auth/v1/recover", method: "POST", body: body)
-        r.setValue("https://co-stanza.heyitsmejosh.com/app#/reset", forHTTPHeaderField: "redirect_to")
+        r.setValue("https://costanza.heyitsmejosh.com/app#/reset", forHTTPHeaderField: "redirect_to")
         _ = try? await URLSession.shared.data(for: r)
         error = "Check your email for a reset link."
     }

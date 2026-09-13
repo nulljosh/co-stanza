@@ -30,7 +30,7 @@ Android, Windows and Linux come from one Kotlin Multiplatform module. A Ktor cli
 
 ## Hosting
 
-Cloudflare Workers serves the `web/` folder as static assets on `co-stanza.heyitsmejosh.com`. Deploys are one wrangler command. There is nothing to run.
+Cloudflare Workers serves the `web/` folder as static assets on `costanza.heyitsmejosh.com`. Deploys are one wrangler command. There is nothing to run.
 
 ## What is left out, and why
 
